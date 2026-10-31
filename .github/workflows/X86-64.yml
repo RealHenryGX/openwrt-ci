@@ -19,7 +19,7 @@ env:
 
 jobs:
   Build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
     - name: Check Server Performance(检查服务器性能)
@@ -40,13 +40,14 @@ jobs:
       env:
         DEBIAN_FRONTEND: noninteractive
       run: |
-        sudo bash -c 'bash <(curl -sL https://build-scripts.immortalwrt.org/init_build_environment.sh)'
-        sudo -E apt -yqq install dos2unix
-        sudo -E apt -yqq install libfuse-dev
-        sudo -E apt -yqq autoremove --purge
-        sudo -E apt -yqq autoclean
-        sudo -E apt -yqq clean
+        docker image prune -af || true
+        sudo rm -rf /usr/share/dotnet /usr/local/lib/android "$AGENT_TOOLSDIRECTORY"
+        curl -fsSL https://build-scripts.immortalwrt.org/init_build_environment.sh -o /tmp/init_build_environment.sh
+        sudo -E bash /tmp/init_build_environment.sh
+        sudo -E apt-get -y install dos2unix libfuse-dev
         sudo -E systemctl daemon-reload
+        sudo -E apt-get -y autoremove --purge
+        sudo -E apt-get -y clean
         sudo timedatectl set-timezone "$TZ"
 
     - name: Combine Disks(合并磁盘)
